@@ -48,3 +48,16 @@ body {
   font-family: "Agrandir", Arial, sans-serif;
   overflow-x: hidden;
 }
+
+/* ── Dark mode toggle animations ───────────────────────────── */
+@keyframes thumb-to-dark {
+  0%   { width: 18px; left: 3px; }
+  45%  { width: 32px; left: 3px; }
+  100% { width: 18px; left: 35px; }
+}
+
+@keyframes thumb-to-light {
+  0%   { width: 18px; left: 35px; }
+  45%  { width: 32px; left: 21px; }
+  100% { width: 18px; left: 3px; }
+}
