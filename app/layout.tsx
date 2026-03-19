@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { LayoutProvider } from "./components/LayoutProvider";
 
 const BASE_URL = "https://paulosantos.design";
 
@@ -103,7 +104,7 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        {children}
+        <LayoutProvider>{children}</LayoutProvider>
       </body>
     </html>
   );

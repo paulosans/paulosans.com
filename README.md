@@ -1,6 +1,6 @@
 # paulosans.com
 
-Personal portfolio of Paulo Santos — staff designer at Mercado Livre with 12+ years of experience. A curated space for case studies, design thinking, and product craft.
+Personal portfolio of Paulo Santos — designer specialist at Mercado Livre with 12+ years of experience. A curated space for case studies, design thinking, and product craft.
 
 ## Stack
 
@@ -16,14 +16,8 @@ Personal portfolio of Paulo Santos — staff designer at Mercado Livre with 12+ 
 - Fully responsive — desktop, tablet, and mobile
 - Interactive hover states faithful to Figma prototypes
 
-## Running locally
 
-```bash
-npm install
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000).
+Open [https://paulosans.com](https://paulosans.com).
 
 ## Design
 

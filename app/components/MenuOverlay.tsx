@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { TransitionLink } from "./TransitionLink";
 import { usePathname } from "next/navigation";
 
 /* ── Assets ──────────────────────────────────────────────────────── */
@@ -334,7 +334,7 @@ export default function MenuOverlay({
             const isActive  = item.key === activePage;
             const isPageKey = item.key !== "blog";
             return (
-              <Link
+              <TransitionLink
                 key={item.href}
                 href={item.disabled ? "#" : item.href}
                 onClick={item.disabled ? (e) => e.preventDefault() : onClose}
@@ -359,7 +359,7 @@ export default function MenuOverlay({
                 >
                   {item.label}
                 </span>
-              </Link>
+              </TransitionLink>
             );
           })}
         </nav>
