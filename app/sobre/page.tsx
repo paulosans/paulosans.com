@@ -10,17 +10,17 @@ import MenuOverlay from "../components/MenuOverlay";
 
 /* ── Assets ─────────────────────────────────────────────────────── */
 
-const imgGif1     = "https://www.figma.com/api/mcp/asset/84d92429-1ecf-45e0-8864-26e3d67df254";
-const imgGif2     = "https://www.figma.com/api/mcp/asset/e23fcfa3-4734-4176-9e6c-122801353151";
-const imgGif3     = "https://www.figma.com/api/mcp/asset/6692f499-01ed-4f27-8115-f1946824e5e3";
-const imgGif4     = "https://www.figma.com/api/mcp/asset/90a21b4a-ea1c-45af-a88a-d20a8924a2dc";
-const imgGif5     = "https://www.figma.com/api/mcp/asset/5aa146bf-520a-4a70-b1f4-609671c0ea5a";
-const imgGif6     = "https://www.figma.com/api/mcp/asset/e1cb0713-83b6-433a-b4c6-8498cd940e99";
-const imgLinkedIn = "https://www.figma.com/api/mcp/asset/c02d6556-9458-415e-a520-feb191911ad3";
-const imgDribbble = "https://www.figma.com/api/mcp/asset/ceb4ee5d-d77c-4c78-b0f8-0620f0c25384";
-const imgGithub   = "https://www.figma.com/api/mcp/asset/32a4d7d1-c9bc-47ac-a001-a2bc75d835c2";
-const imgArrowns  = "https://www.figma.com/api/mcp/asset/0f5b438a-4d8a-4d68-8ebe-43b313a23dd2";
-const imgPhoto    = "https://www.figma.com/api/mcp/asset/e6a500eb-a550-447c-8aa6-668f1bc7cb2d";
+const imgGif1     = "/figma-assets/84d92429-1ecf-45e0-8864-26e3d67df254.gif";
+const imgGif2     = "/figma-assets/e23fcfa3-4734-4176-9e6c-122801353151.png";
+const imgGif3     = "/figma-assets/6692f499-01ed-4f27-8115-f1946824e5e3.png";
+const imgGif4     = "/figma-assets/90a21b4a-ea1c-45af-a88a-d20a8924a2dc.png";
+const imgGif5     = "/figma-assets/5aa146bf-520a-4a70-b1f4-609671c0ea5a.gif";
+const imgGif6     = "/figma-assets/e1cb0713-83b6-433a-b4c6-8498cd940e99.png";
+const imgLinkedIn = "/figma-assets/c02d6556-9458-415e-a520-feb191911ad3.svg";
+const imgDribbble = "/figma-assets/ceb4ee5d-d77c-4c78-b0f8-0620f0c25384.svg";
+const imgGithub   = "/figma-assets/32a4d7d1-c9bc-47ac-a001-a2bc75d835c2.svg";
+const imgArrowns  = "/figma-assets/0f5b438a-4d8a-4d68-8ebe-43b313a23dd2.svg";
+const imgPhoto    = "/figma-assets/e6a500eb-a550-447c-8aa6-668f1bc7cb2d.png";
 
 /* ── MenuButton ─────────────────────────────────────────────────── */
 function MenuButton({ onClick }: { onClick: () => void }) {

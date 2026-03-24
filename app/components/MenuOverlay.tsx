@@ -5,16 +5,16 @@ import { TransitionLink } from "./TransitionLink";
 import { usePathname } from "next/navigation";
 
 /* ── Assets ──────────────────────────────────────────────────────── */
-const imgBgHome       = "https://www.figma.com/api/mcp/asset/abe5ab66-8e82-4769-a1c1-0440d2ed350b";
-const imgBgAbout      = "https://www.figma.com/api/mcp/asset/b22f77d9-22b9-45e8-a34e-cb4db7f78ea7";
-const imgBgPlayground = "https://www.figma.com/api/mcp/asset/67da85b2-5e12-40a5-8913-020618a3b104";
-const imgLinkedIn     = "https://www.figma.com/api/mcp/asset/eb5765fb-a046-42c7-b916-37c642988f1c";
-const imgDribbble     = "https://www.figma.com/api/mcp/asset/d3bcac0b-0c83-45b4-9070-c943404a4420";
-const imgGithub       = "https://www.figma.com/api/mcp/asset/0703f59a-386e-4681-b823-de89c6777c4c";
-const imgOtherA       = "https://www.figma.com/api/mcp/asset/154a9072-12cb-407d-8a56-4e2ab90eed47";
-const imgOtherB       = "https://www.figma.com/api/mcp/asset/c9cc2616-c75e-41f9-aaf3-808c6e2e8579";
-const imgGlobe        = "https://www.figma.com/api/mcp/asset/5f31e925-6555-409e-85ab-7da89f7fc466";
-const imgChevron      = "https://www.figma.com/api/mcp/asset/e6d15848-31f8-42ac-9b6e-b91ac7c0e840";
+const imgBgHome       = "/figma-assets/abe5ab66-8e82-4769-a1c1-0440d2ed350b.gif";
+const imgBgAbout      = "/figma-assets/b22f77d9-22b9-45e8-a34e-cb4db7f78ea7.gif";
+const imgBgPlayground = "/figma-assets/67da85b2-5e12-40a5-8913-020618a3b104.gif";
+const imgLinkedIn     = "/figma-assets/eb5765fb-a046-42c7-b916-37c642988f1c.svg";
+const imgDribbble     = "/figma-assets/d3bcac0b-0c83-45b4-9070-c943404a4420.svg";
+const imgGithub       = "/figma-assets/0703f59a-386e-4681-b823-de89c6777c4c.svg";
+const imgOtherA       = "/figma-assets/154a9072-12cb-407d-8a56-4e2ab90eed47.svg";
+const imgOtherB       = "/figma-assets/c9cc2616-c75e-41f9-aaf3-808c6e2e8579.svg";
+const imgGlobe        = "/figma-assets/5f31e925-6555-409e-85ab-7da89f7fc466.svg";
+const imgChevron      = "/figma-assets/e6d15848-31f8-42ac-9b6e-b91ac7c0e840.svg";
 
 /* ── Types & static data ─────────────────────────────────────────── */
 type PageKey = "home" | "cases" | "about" | "playground";

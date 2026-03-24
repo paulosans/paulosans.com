@@ -5,7 +5,7 @@ import { TransitionLink } from "../components/TransitionLink";
 import MenuOverlay from "../components/MenuOverlay";
 
 /* ── Assets ─────────────────────────────────────────────────────── */
-const imgArrowns = "https://www.figma.com/api/mcp/asset/7f1e3006-7a72-4bd7-b87a-03c77aa8e70f";
+const imgArrowns = "/figma-assets/7f1e3006-7a72-4bd7-b87a-03c77aa8e70f.svg";
 
 /* ── Sub-components ─────────────────────────────────────────────── */
 function MenuButton({ onClick }: { onClick: () => void }) {

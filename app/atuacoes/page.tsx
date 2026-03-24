@@ -7,35 +7,35 @@ import MenuOverlay from "../components/MenuOverlay";
 
 /* ── Assets (from Figma frame 11:545, 1600×890 canvas) ──────────── */
 // Mountains
-const imgV9 = "https://www.figma.com/api/mcp/asset/d71a7ce7-dec1-4e96-9b4a-223a6c30546a";
-const imgV8 = "https://www.figma.com/api/mcp/asset/f3a7e03e-5ab6-4513-95cb-bc02dcaa8101";
-const imgV7 = "https://www.figma.com/api/mcp/asset/ca2af8aa-7fa9-43d4-a50d-9def84ddda09";
-const imgV6 = "https://www.figma.com/api/mcp/asset/dea0a9aa-d40a-448d-ae1e-791c809e56cb";
-const imgV5 = "https://www.figma.com/api/mcp/asset/6637f4a0-f251-4d94-9a3c-43104382c399";
-const imgV4 = "https://www.figma.com/api/mcp/asset/decf6324-9c81-485b-8e99-16ea04275b1c";
-const imgV2 = "https://www.figma.com/api/mcp/asset/a482f26d-21b5-4c66-b6d5-927a91507782";
-const imgV3 = "https://www.figma.com/api/mcp/asset/e3c6debb-1f66-459c-8237-6f4f1c2a159b";
+const imgV9 = "/figma-assets/d71a7ce7-dec1-4e96-9b4a-223a6c30546a.svg";
+const imgV8 = "/figma-assets/f3a7e03e-5ab6-4513-95cb-bc02dcaa8101.svg";
+const imgV7 = "/figma-assets/ca2af8aa-7fa9-43d4-a50d-9def84ddda09.svg";
+const imgV6 = "/figma-assets/dea0a9aa-d40a-448d-ae1e-791c809e56cb.svg";
+const imgV5 = "/figma-assets/6637f4a0-f251-4d94-9a3c-43104382c399.svg";
+const imgV4 = "/figma-assets/decf6324-9c81-485b-8e99-16ea04275b1c.svg";
+const imgV2 = "/figma-assets/a482f26d-21b5-4c66-b6d5-927a91507782.svg";
+const imgV3 = "/figma-assets/e3c6debb-1f66-459c-8237-6f4f1c2a159b.svg";
 
 // Flag A – Atuações Anteriores 2014-2018
-const imgFlagImg  = "https://www.figma.com/api/mcp/asset/0bae5691-274a-4ce3-84d3-b7b4e51349fe";
-const imgPoleA    = "https://www.figma.com/api/mcp/asset/570706e3-b25e-4aeb-b3bf-9ff78265a79a";
+const imgFlagImg  = "/figma-assets/0bae5691-274a-4ce3-84d3-b7b4e51349fe.gif";
+const imgPoleA    = "/figma-assets/570706e3-b25e-4aeb-b3bf-9ff78265a79a.svg";
 
 // Flag B – Descomplica 2020-2021
-const imgBadgeB   = "https://www.figma.com/api/mcp/asset/2de860b5-5dac-416a-8b35-5e3f0527ce45";
-const imgDotB     = "https://www.figma.com/api/mcp/asset/8d7a4b6d-e500-422f-a7a8-6339852d7b5e";
-const imgPoleB    = "https://www.figma.com/api/mcp/asset/0cae536f-1da0-429d-b0a7-a8eee106d31a";
+const imgBadgeB   = "/figma-assets/2de860b5-5dac-416a-8b35-5e3f0527ce45.svg";
+const imgDotB     = "/figma-assets/8d7a4b6d-e500-422f-a7a8-6339852d7b5e.svg";
+const imgPoleB    = "/figma-assets/0cae536f-1da0-429d-b0a7-a8eee106d31a.svg";
 
 // Flag C – Warren 2021-2022
-const imgBadgeC   = "https://www.figma.com/api/mcp/asset/0bab212e-07f8-448d-b6c1-6d02a9782014";
-const imgDotC     = "https://www.figma.com/api/mcp/asset/17ceba66-7226-43a6-8904-ca51a49ba034";
-const imgPoleC    = "https://www.figma.com/api/mcp/asset/afc5c437-609f-49d5-9943-8229d5125904";
+const imgBadgeC   = "/figma-assets/0bab212e-07f8-448d-b6c1-6d02a9782014.svg";
+const imgDotC     = "/figma-assets/17ceba66-7226-43a6-8904-ca51a49ba034.svg";
+const imgPoleC    = "/figma-assets/afc5c437-609f-49d5-9943-8229d5125904.svg";
 
 // Flag D – Itaú 2022-2024
-const imgBadgeD   = "https://www.figma.com/api/mcp/asset/93f61bd0-f631-4ef2-8490-e21b459025ca";
-const imgDotD     = "https://www.figma.com/api/mcp/asset/60ef6d9c-ba01-4928-bb43-7f4cad92e295";
-const imgPoleD    = "https://www.figma.com/api/mcp/asset/edff2439-7437-4bb4-8650-d2c7a6f668cd";
+const imgBadgeD   = "/figma-assets/93f61bd0-f631-4ef2-8490-e21b459025ca.png";
+const imgDotD     = "/figma-assets/60ef6d9c-ba01-4928-bb43-7f4cad92e295.svg";
+const imgPoleD    = "/figma-assets/edff2439-7437-4bb4-8650-d2c7a6f668cd.svg";
 
-const imgArrowns  = "https://www.figma.com/api/mcp/asset/dbd5aaad-2d39-47c6-9ae5-d7b0e2883607";
+const imgArrowns  = "/figma-assets/dbd5aaad-2d39-47c6-9ae5-d7b0e2883607.svg";
 
 /* ── Pole: grows downward from 0 to full height ─────────────────── */
 function Pole({ src, left, top, height, visible }: { src: string; left: number; top: number; height: number; visible: boolean }) {

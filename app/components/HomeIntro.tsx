@@ -6,11 +6,11 @@ import MenuOverlay from "./MenuOverlay";
 import { useMemojiContext } from "./MemojiContext";
 
 const imgMemoji =
-  "https://www.figma.com/api/mcp/asset/133be483-21f4-4de7-abd3-ec515c210a7a";
+  "/figma-assets/133be483-21f4-4de7-abd3-ec515c210a7a.gif";
 const imgIconNormal =
-  "https://www.figma.com/api/mcp/asset/465ed456-cc28-4c23-bdf9-ead698df39a0";
+  "/figma-assets/465ed456-cc28-4c23-bdf9-ead698df39a0.svg";
 const imgIconHover =
-  "https://www.figma.com/api/mcp/asset/8976d692-1314-4de2-8c0b-5d1afee5a487";
+  "/figma-assets/8976d692-1314-4de2-8c0b-5d1afee5a487.svg";
 
 /* ── Icons ────────────────────────────────────────────────────────── */
 function SunIcon({ size }: { size: number }) {
@@ -106,10 +106,9 @@ function MenuButton({ onClick }: { onClick: () => void }) {
 
 /* ── Page ─────────────────────────────────────────────────────────── */
 export default function HomeIntro() {
-  const [casesHovered, setCasesHovered] = useState(false);
   const [aboutHovered, setAboutHovered] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const { setHovered } = useMemojiContext();
+  const { setHovered, casesHovered, setCasesHovered, startHeroAnimation } = useMemojiContext();
 
   const handleAboutEnter = () => { setAboutHovered(true);  setHovered(true);  };
   const handleAboutLeave = () => { setAboutHovered(false); setHovered(false); };
@@ -135,10 +134,7 @@ export default function HomeIntro() {
           <MenuButton onClick={() => setMenuOpen(true)} />
         </nav>
 
-        <div
-          className="home-orange-shape absolute bg-[#ff9641] dark:bg-[#c96e1e] transition-all duration-500 ease-in-out"
-          style={{ right: casesHovered ? "-305px" : "-189px", top: casesHovered ? "614px" : "427px", width: casesHovered ? "600px" : "656px", height: casesHovered ? "600px" : "1312px", borderRadius: casesHovered ? "120px" : "656px" }}
-        />
+        {/* orange shape is now managed by LayoutProvider via MemojiContext */}
 
         <div
           className="home-hero-text absolute left-[200px]"
@@ -183,12 +179,13 @@ export default function HomeIntro() {
 
         <TransitionLink
           href="/cases"
-          className="home-cases-text absolute left-[200px] transition-transform duration-500 ease-in-out"
-          style={{ bottom: "-63px", transform: casesHovered ? "translateY(-63px)" : "translateY(0)" }}
+          className="home-cases-text absolute left-[200px]"
+          style={{ bottom: "-63px", transform: casesHovered ? "translateY(-63px)" : "translateY(0)", transition: "transform 0.5s ease-in-out" }}
           onMouseEnter={() => setCasesHovered(true)}
           onMouseLeave={() => setCasesHovered(false)}
+          onClick={() => startHeroAnimation()}
         >
-          <p className="home-cases-label font-['Agrandir'] font-[800] text-[#242a2f] dark:text-[#f0ede8] text-[160px] leading-none whitespace-nowrap transition-colors duration-300">cases</p>
+          <p className="home-cases-label font-['Agrandir'] font-[800] text-[160px] leading-none whitespace-nowrap" style={{ opacity: 0 }}>cases</p>
         </TransitionLink>
 
       </div>
@@ -204,10 +201,10 @@ export default function HomeIntro() {
 
         <nav className="home-mobile-nav relative flex items-center justify-end gap-2 sm:gap-6 pt-10 pr-4 sm:pr-8 pl-4 sm:pl-8 flex-shrink-0">
           <TransitionLink href="/cases" className="home-mobile-nav-cases hidden md:flex items-center justify-center p-2 group">
-            <span className="font-['Agrandir'] font-light text-[#242a2f] dark:text-[#f0ede8] text-base tracking-[0.72px] whitespace-nowrap transition-opacity group-hover:opacity-60">Cases</span>
+            <span className="home-mobile-nav-cases-label font-['Agrandir'] font-light text-[#242a2f] dark:text-[#f0ede8] text-base tracking-[0.72px] whitespace-nowrap transition-opacity group-hover:opacity-60">Cases</span>
           </TransitionLink>
           <TransitionLink href="/sobre" className="home-mobile-nav-sobre hidden md:flex items-center justify-center p-2 group">
-            <span className="font-['Agrandir'] font-light text-[#242a2f] dark:text-[#f0ede8] text-base tracking-[0.72px] whitespace-nowrap transition-opacity group-hover:opacity-60">Sobre</span>
+            <span className="home-mobile-nav-sobre-label font-['Agrandir'] font-light text-[#242a2f] dark:text-[#f0ede8] text-base tracking-[0.72px] whitespace-nowrap transition-opacity group-hover:opacity-60">Sobre</span>
           </TransitionLink>
           <MenuButton onClick={() => setMenuOpen(true)} />
         </nav>
