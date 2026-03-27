@@ -5,17 +5,16 @@ import { usePathname, useRouter } from "next/navigation";
 import { LayoutGroup, motion, AnimatePresence } from "framer-motion";
 import { MemojiContext } from "./MemojiContext";
 
+/* ── Loader constants ───────────────────────────────────────────── */
+const PILL_W  = 240;
+const PILL_H  = 80;
+const SKULL_W = 46.937;
+const SKULL_H = 48;
+const PAD     = 18;
+
 const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 const imgMemoji = "/figma-assets/0bfb2280-1582-469a-869a-b904b7d32828.gif";
-
-/* ── Case logo assets ───────────────────────────────────────────── */
-const CASE_LOGOS = [
-  "/figma-assets/cases-logo-itau.png",
-  "/figma-assets/cases-logo-descomplica.png",
-  "/figma-assets/cases-logo-warren.png",
-];
-
 
 /* ── Hero text per case ──────────────────────────────────────── */
 const CASES_HERO = [
@@ -24,15 +23,17 @@ const CASES_HERO = [
   { name: "Warren",      fontSize: 140, link: "/cases/warren" },
 ];
 
-/* ── Brand shape positions per case (1600×890 base) ────────────── */
-// Each entry: { left, top, width, height } in px at 1600×890
+/* ── Brand shape per case (CSS, no PNG) ─────────────────────────── */
 const CASE_POSITIONS = [
-  // 0 — Itaú: inset [34.49% 28.56% 29.55% 51.44%]
-  { left: 823, top: 307, width: 320, height: 320 },
-  // 1 — Descomplica: centered 340×340 at 50%/50%+22
-  { left: 630, top: 283, width: 340, height: 340 },
-  // 2 — Warren: same as Itaú
-  { left: 823, top: 307, width: 320, height: 320 },
+  // 0 — Itaú: orange-red rounded square
+  { left: 823, top: 307, width: 320, height: 320,
+    color: "#F06000", borderRadius: 80, extraRotation: 0 },
+  // 1 — Descomplica: green rotated rounded square
+  { left: 630, top: 283, width: 340, height: 340,
+    color: "#00E887", borderRadius: 90, extraRotation: 15 },
+  // 2 — Warren: crimson D-shape
+  { left: 823, top: 307, width: 320, height: 320,
+    color: "#E02B57", borderRadius: "90px 90px 90px 0", extraRotation: 0 },
 ];
 
 export function LayoutProvider({ children }: { children: React.ReactNode }) {
@@ -51,6 +52,23 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
   const [winH,             setWinH]              = useState(890);
   const [winW,             setWinW]              = useState(1600);
 
+  /* ── Loader state ────────────────────────────────────────────── */
+  const [isLoading,        setIsLoading]         = useState(true);
+  const [loaderOrange,     setLoaderOrange]      = useState(false);
+  const [loaderExiting,    setLoaderExiting]     = useState(false);
+  const [overlayDone,      setOverlayDone]       = useState(false);
+  const [brandNormalZ,     setBrandNormalZ]      = useState(false);
+
+  // Loader timing: 100ms → skull+color start (1s) → skull rotate (1100ms) → expand brand shape → fade overlay → drop zIndex
+  useEffect(() => {
+    const t0 = setTimeout(() => setLoaderOrange(true),   100);
+    const te = setTimeout(() => setLoaderExiting(true), 200); // skull starts rotating at 0.2s
+    const t1 = setTimeout(() => setIsLoading(false),    1500);
+    const t2 = setTimeout(() => setOverlayDone(true),   2200);
+    const t3 = setTimeout(() => setBrandNormalZ(true),  2800);
+    return () => { clearTimeout(t0); clearTimeout(te); clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, []);
+
   // Fade in portal + detect viewport + track window size
   useEffect(() => {
     const el = document.getElementById("memoji-portal");
@@ -65,7 +83,7 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  const isSobre  = pathname === "/sobre";
+  const isSobre  = ["/sobre", "/sobre/", "/curriculo", "/curriculo/", "/atuacoes", "/atuacoes/"].includes(pathname);
   const isCases  = pathname.startsWith("/cases");
   const isHome   = pathname === "/";
   const hasMemojiPlaceholder = ["/sobre", "/curriculo"].includes(pathname);
@@ -105,10 +123,10 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isDesktop]);
 
-  // Mark hero text as landed after spring animation settles (~700ms)
+  // Mark hero text as landed slightly before spring settles (~400ms)
   useEffect(() => {
     if (isCases && isDesktop !== false) {
-      const t = setTimeout(() => setHeroLanded(true), 700);
+      const t = setTimeout(() => setHeroLanded(true), 400);
       return () => clearTimeout(t);
     }
   }, [isCases, isDesktop]);
@@ -167,10 +185,9 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
     brandAnimate = {
       left: pos.left, top: pos.top,
       width: pos.width, height: pos.height,
-      borderRadius: 0,
-      // Fade to transparent on navigation (isCases) — overlaps last 440ms of rotation
-      backgroundColor: isCases ? "rgba(255, 150, 65, 0)" : "#ff9641",
-      rotate: brandRotation,
+      borderRadius: pos.borderRadius,
+      backgroundColor: pos.color,
+      rotate: brandRotation + pos.extraRotation,
     };
   } else if (casesHovered && isDesktop !== false) {
     // Home hover cases — compact square (matches cases intro state)
@@ -189,6 +206,18 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
       borderRadius: 656,
       backgroundColor: "#ff9641",
       rotate: brandRotation,
+    };
+  }
+
+  // Loading override — small centered pill (dark → orange) that becomes the brand shape
+  if (isLoading) {
+    const cx = winW / 2 - PILL_W / 2;
+    const cy = winH / 2 - PILL_H / 2;
+    brandAnimate = {
+      left: cx, top: cy,
+      width: PILL_W, height: PILL_H, borderRadius: 656,
+      backgroundColor: loaderOrange ? "#FF9641" : "#242a2f",
+      rotate: 0,
     };
   }
 
@@ -260,41 +289,68 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
               width: 0, height: 0,
               overflow: "visible",
               pointerEvents: "none",
-              zIndex: 1,
+              zIndex: brandNormalZ ? 1 : 9999,
+              display: isSobre ? "none" : undefined,
             }}
           >
             <motion.div
+              initial={false}
               style={{ position: "absolute", overflow: "hidden" }}
               animate={brandAnimate}
-              transition={{
+              transition={isLoading ? {
+                backgroundColor: { type: "tween", duration: 1.0, ease: [0.4, 0, 0.2, 1] },
+                default: { type: "spring", stiffness: 400, damping: 35 },
+              } : {
                 type: "spring", stiffness: 400, damping: 35,
                 rotate: { type: "tween", duration: 0.36, ease: [0.4, 0, 0.2, 1] },
                 backgroundColor: { type: "tween", duration: 0.28, ease: "easeInOut" },
+                opacity: { type: "tween", duration: 0.4, ease: "easeInOut" },
               }}
             >
-              {/* Logo background — fades in as soon as isCases, simultaneous with color fade */}
-              <AnimatePresence mode="wait">
-                {isCases && (
-                  <motion.div
-                    key={activeCaseIndex}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.5, ease: "easeInOut" }}
+              {/* Skull — visible only during loading, slides left → right */}
+              <AnimatePresence>
+                {isLoading && (
+                  <motion.img
+                    key="loader-skull"
+                    src="/figma-assets/loader-logo.svg"
+                    alt="logo"
+                    initial={{ x: PAD, opacity: 0, rotate: 0 }}
+                    animate={{ x: loaderOrange ? PILL_W - SKULL_W - PAD : PAD, opacity: 1, rotate: loaderExiting ? 180 : 0 }}
+                    exit={{ opacity: 0, transition: { duration: 0.3 } }}
+                    transition={{
+                      x: { duration: 1.0, ease: [0.4, 0, 0.2, 1] },
+                      rotate: { duration: 0.5, ease: [0.4, 0, 0.2, 1] },
+                      opacity: { duration: 0.3, ease: "easeInOut" },
+                    }}
                     style={{
                       position: "absolute",
-                      inset: 0,
-                      backgroundImage: `url(${CASE_LOGOS[activeCaseIndex]})`,
-                      backgroundSize: "100% 100%",
-                      backgroundRepeat: "no-repeat",
+                      top: (PILL_H - SKULL_H) / 2,
+                      width: SKULL_W,
+                      height: SKULL_H,
+                      objectFit: "contain",
                       pointerEvents: "none",
+                      transformOrigin: "center",
                     }}
                   />
                 )}
               </AnimatePresence>
+
             </motion.div>
           </div>
         )}
+
+        {/* ── White overlay — covers page during loading ────────────── */}
+        <motion.div
+          initial={{ opacity: 1 }}
+          animate={{ opacity: overlayDone ? 0 : 1 }}
+          transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+          style={{
+            position: "fixed", inset: 0,
+            backgroundColor: "#fff",
+            zIndex: 9998,
+            pointerEvents: "none",
+          }}
+        />
 
         {/* ── Persistent memoji ────────────────────────────────────── */}
         <div
@@ -306,6 +362,7 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
             overflow: "visible",
             pointerEvents: "none",
             zIndex: 100,
+            display: (pathname === "/curriculo" || pathname === "/curriculo/" || pathname === "/atuacoes" || pathname === "/atuacoes/") ? "none" : undefined,
           }}
         >
           <motion.div
@@ -368,7 +425,18 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
               }}
               onClick={heroLive ? handleHeroTextClick : undefined}
             >
-              {heroText}
+              <AnimatePresence mode="popLayout">
+                <motion.span
+                  key={heroText}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.45, ease: "easeInOut" }}
+                  style={{ display: "block" }}
+                >
+                  {heroText}
+                </motion.span>
+              </AnimatePresence>
             </motion.p>
           </div>
         )}
