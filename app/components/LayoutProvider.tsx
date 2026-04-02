@@ -24,15 +24,20 @@ const CASES_HERO = [
 ];
 
 /* ── Brand shape per case (CSS, no PNG) ─────────────────────────── */
+// leftFromCenter: offset from winW/2 (design canvas 1600px → center 800px)
+//   Itaú:        left=823  → 823-800 = +23
+//   Descomplica: left=630  → 630-800 = -170
+//   Warren:      left=823  → 823-800 = +23
+// actual left in brandAnimate = winW/2 + leftFromCenter
 const CASE_POSITIONS = [
   // 0 — Itaú: orange-red rounded square
-  { left: 823, top: 307, width: 320, height: 320,
+  { leftFromCenter: 23, top: 307, width: 320, height: 320,
     color: "#F06000", borderRadius: 80, extraRotation: 0 },
   // 1 — Descomplica: green rotated rounded square
-  { left: 630, top: 283, width: 340, height: 340,
+  { leftFromCenter: -170, top: 283, width: 340, height: 340,
     color: "#00E887", borderRadius: 90, extraRotation: 15 },
   // 2 — Warren: crimson D-shape
-  { left: 823, top: 307, width: 320, height: 320,
+  { leftFromCenter: 23, top: 307, width: 320, height: 320,
     color: "#E02B57", borderRadius: "90px 90px 90px 0", extraRotation: 0 },
 ];
 
@@ -83,9 +88,11 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  const isSobre  = ["/sobre", "/sobre/", "/curriculo", "/curriculo/", "/atuacoes", "/atuacoes/"].includes(pathname);
-  const isCases  = pathname.startsWith("/cases");
-  const isHome   = pathname === "/";
+  const isSobre         = ["/sobre", "/sobre/", "/curriculo", "/curriculo/", "/atuacoes", "/atuacoes/"].includes(pathname);
+  const isCases         = pathname.startsWith("/cases");                                    // any /cases/* route
+  const isCasesCarousel = pathname === "/cases" || pathname === "/cases/";                 // only the carousel
+  const isCasePage      = isCases && !isCasesCarousel;                                    // /cases/itau, /cases/warren, etc.
+  const isHome          = pathname === "/";
   const hasMemojiPlaceholder = ["/sobre", "/curriculo"].includes(pathname);
 
   useIsomorphicLayoutEffect(() => {
@@ -107,11 +114,11 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
 
   // Direct URL navigation to /cases (no click) — still triggers rotation once
   useEffect(() => {
-    if (isCases && isDesktop !== false && !rotationFiredRef.current) {
+    if (isCasesCarousel && isDesktop !== false && !rotationFiredRef.current) {
       rotationFiredRef.current = true;
       setBrandRotation(r => r + 360);
     }
-  }, [isCases, isDesktop]);
+  }, [isCasesCarousel, isDesktop]);
 
   // startHeroAnimation: called on click — updates BOTH heroAnimating and rotation in one batch
   const startHeroAnimation = useCallback(() => {
@@ -125,11 +132,11 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
 
   // Mark hero text as landed slightly before spring settles (~400ms)
   useEffect(() => {
-    if (isCases && isDesktop !== false) {
+    if (isCasesCarousel && isDesktop !== false) {
       const t = setTimeout(() => setHeroLanded(true), 400);
       return () => clearTimeout(t);
     }
-  }, [isCases, isDesktop]);
+  }, [isCasesCarousel, isDesktop]);
 
   /* ── Memoji animate target ─────────────────────────────────────── */
   let animateTarget: Record<string, number | string>;
@@ -147,8 +154,8 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
     animateTarget = { opacity: 0 };
   } else if (isDesktop === false) {
     animateTarget = { left: 4, top: 10, width: 122, height: 90, opacity: 1 };
-  } else if (isCases) {
-    // Show memoji at home position when on cases page
+  } else if (isCasesCarousel) {
+    // Show memoji at home position when on cases carousel
     animateTarget = { left: 164, top: 21, width: 130, height: 98, opacity: 1 };
   } else {
     animateTarget = {
@@ -180,10 +187,10 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
   // Home hover:   compact orange square (matching cases intro)
   // Cases page:   brand logo at case-specific position
   let brandAnimate: Record<string, number | string>;
-  if ((isCases || heroAnimating) && isDesktop !== false) {
+  if ((isCasesCarousel || heroAnimating) && isDesktop !== false) {
     const pos = CASE_POSITIONS[activeCaseIndex] ?? CASE_POSITIONS[0];
     brandAnimate = {
-      left: pos.left, top: pos.top,
+      left: winW / 2 + pos.leftFromCenter, top: pos.top,
       width: pos.width, height: pos.height,
       borderRadius: pos.borderRadius,
       backgroundColor: pos.color,
@@ -191,17 +198,19 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
     };
   } else if (casesHovered && isDesktop !== false) {
     // Home hover cases — compact square (matches cases intro state)
+    // Anchor to right: at 1600px design, left=1305, width=600 → right overflow=305px
     brandAnimate = {
-      left: 1305, top: 614,
+      left: winW - 295, top: 614,
       width: 600, height: 600,
       borderRadius: 120,
       backgroundColor: "#ff9641",
       rotate: brandRotation,
     };
   } else {
-    // Home normal — large pill
+    // Home normal — large pill anchored to right edge
+    // At 1600px design: left=1133, width=656 → right overflow=189px → left = winW - 467
     brandAnimate = {
-      left: 1133, top: 427,
+      left: winW - 467, top: 427,
       width: 656, height: 1312,
       borderRadius: 656,
       backgroundColor: "#ff9641",
@@ -223,7 +232,7 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
 
   /* ── Hero text animate target ("cases" → case name) ───────────── */
   // heroLive: on cases page after spring settles → show case name
-  const heroLive     = isCases && heroLanded;
+  const heroLive     = isCasesCarousel && heroLanded;
   const heroCase     = CASES_HERO[activeCaseIndex] ?? CASES_HERO[0];
   const heroText     = heroLive ? heroCase.name     : "cases";
   const heroFontSize = heroLive ? heroCase.fontSize : 160;
@@ -234,7 +243,7 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
   const heroCasesTop  = winH / 2 + 22 - heroFontSize / 2;
 
   let heroAnimate: Record<string, number | string>;
-  if ((isCases || heroAnimating) && isDesktop !== false && !heroLanded) {
+  if ((isCasesCarousel || heroAnimating) && isDesktop !== false && !heroLanded) {
     // Flying to cases as "cases" (160px)
     heroAnimate = { left: heroCasesLeft, top: winH / 2 - 58, fontSize: "160px", y: 0, opacity: 1 };
   } else if (heroLive && isDesktop !== false) {
@@ -290,7 +299,7 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
               overflow: "visible",
               pointerEvents: "none",
               zIndex: brandNormalZ ? 1 : 9999,
-              display: isSobre ? "none" : undefined,
+              display: (isSobre || isCasePage) ? "none" : undefined,
             }}
           >
             <motion.div
@@ -362,7 +371,7 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
             overflow: "visible",
             pointerEvents: "none",
             zIndex: 100,
-            display: (pathname === "/curriculo" || pathname === "/curriculo/" || pathname === "/atuacoes" || pathname === "/atuacoes/") ? "none" : undefined,
+            display: (pathname === "/curriculo" || pathname === "/curriculo/" || pathname === "/atuacoes" || pathname === "/atuacoes/" || isCasePage) ? "none" : undefined,
           }}
         >
           <motion.div
@@ -402,6 +411,7 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
               overflow: "visible",
               pointerEvents: "none",
               zIndex: 10,
+              display: isCasePage ? "none" : undefined,
             }}
           >
             <motion.p
