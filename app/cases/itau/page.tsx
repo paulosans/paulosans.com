@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { TransitionLink } from "../../components/TransitionLink";
 import MenuOverlay from "../../components/MenuOverlay";
@@ -28,13 +28,13 @@ function BackButton() {
       <div
         style={{
           width: 32, height: 32, borderRadius: "50%", flexShrink: 0,
-          background: hovered ? "transparent" : "rgba(36,42,47,0.08)",
+          background: "transparent",
           display: "flex", alignItems: "center", justifyContent: "center",
           transition: "background 0.3s",
         }}
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <path d="M19 10l-6 6 6 6" stroke="#242a2f" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M15 6l-6 6 6 6" stroke="#242a2f" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </div>
       <span style={{ fontFamily: "'Agrandir'", fontWeight: 300, fontSize: 18, color: "#242a2f", letterSpacing: "0.72px" }}>
@@ -205,52 +205,40 @@ function CaseButton() {
   );
 }
 
+/* ── Animation variants ───────────────────────────────────────────── */
+const fadeUp = {
+  hidden: { opacity: 0, y: 28 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.25, 0.1, 0.25, 1] as [number,number,number,number] } },
+};
+
+const fadeUpSlow = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.25, 0.1, 0.25, 1] as [number,number,number,number] } },
+};
+
+const stagger = (delay = 0.08) => ({
+  hidden: {},
+  show: { transition: { staggerChildren: delay, delayChildren: 0.05 } },
+});
+
+const slideLeft = {
+  hidden: { opacity: 0, x: -36 },
+  show: { opacity: 1, x: 0, transition: { duration: 0.7, ease: [0.25, 0.1, 0.25, 1] as [number,number,number,number] } },
+};
+
 /* ── Page ─────────────────────────────────────────────────────────── */
 export default function ItauCasePage() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [showVideoIntro, setShowVideoIntro] = useState(false);
-
-  useEffect(() => {
-    if (typeof window !== "undefined" && sessionStorage.getItem("caseVideoTransition")) {
-      sessionStorage.removeItem("caseVideoTransition");
-      setShowVideoIntro(true);
-    }
-  }, []);
-
   return (
     <>
       <MenuOverlay open={menuOpen} onClose={() => setMenuOpen(false)} />
-
-      {/* ── Video transition overlay ──────────────────────────────── */}
-      <AnimatePresence>
-        {showVideoIntro && (
-          <motion.div
-            key="video-intro"
-            className="itau-video-intro"
-            style={{ position: "fixed", inset: 0, zIndex: 9999, overflow: "hidden", pointerEvents: "none" }}
-            initial={{ opacity: 1 }}
-            animate={{ opacity: 0 }}
-            transition={{ duration: 0.7, delay: 0.05, ease: [0.4, 0, 0.2, 1] }}
-            onAnimationComplete={() => setShowVideoIntro(false)}
-          >
-            <video
-              src="/bg-cases.mp4"
-              autoPlay
-              muted
-              loop
-              playsInline
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <div className="itau-page min-h-screen bg-white overflow-x-hidden">
 
         {/* ── Nav ──────────────────────────────────────────────────── */}
         <nav className="itau-nav flex items-center justify-between pt-[54px] px-6 sm:px-12 lg:px-[200px] pb-2">
           <BackButton />
-          <div className="itau-nav-right flex items-center gap-1">
+          <div className="itau-nav-right flex items-center gap-8">
             <div className="itau-nav-cases px-2 py-2 rounded-[8px] bg-[rgba(36,42,47,0.08)]">
               <span style={{ fontFamily: "'Agrandir'", fontWeight: 800, fontSize: 18, color: "#242a2f", letterSpacing: "0.72px" }}>Cases</span>
             </div>
@@ -269,10 +257,15 @@ export default function ItauCasePage() {
         </div>
 
         {/* ── Project info row ─────────────────────────────────────── */}
-        <div className="itau-info-row mt-8 px-6 sm:px-12 lg:px-[200px] flex flex-wrap items-center justify-between gap-6">
-
+        <motion.div
+          className="itau-info-row mt-8 px-6 sm:px-12 lg:px-[200px] flex flex-wrap items-center justify-between gap-6"
+          variants={stagger(0.12)}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.2 }}
+        >
           {/* Left: icon + title */}
-          <div className="itau-info-title flex items-center gap-4">
+          <motion.div className="itau-info-title flex items-center gap-4" variants={fadeUp}>
             <img
               src="/figma-assets/itau-logo-icon.png"
               alt="itaú"
@@ -286,22 +279,28 @@ export default function ItauCasePage() {
                 nos produtos do Itaú
               </p>
             </div>
-          </div>
+          </motion.div>
 
-          <Award />
-        </div>
+          <motion.div variants={fadeUp}>
+            <Award />
+          </motion.div>
+        </motion.div>
 
 
         {/* ── Content section ──────────────────────────────────────── */}
-        <div className="itau-content mt-16 px-6 sm:px-12 lg:px-[200px] flex flex-col lg:flex-row items-start gap-8 lg:gap-0 pb-16 relative">
+        <div className="itau-content mt-16 px-6 sm:px-12 lg:px-[200px] flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-0 pb-16 relative">
 
           {/* Left: phone + orange shape */}
-          <div
+          <motion.div
             className="itau-visuals flex-shrink-0 relative self-center lg:self-auto"
             style={{
               width: "clamp(216px, 30.3vw, 461px)",
               height: "clamp(306px, 42.8vw, 648px)",
             }}
+            variants={slideLeft}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.2 }}
           >
             {/* Orange squircle — behind, slightly down-left */}
             <img
@@ -317,8 +316,7 @@ export default function ItauCasePage() {
                 zIndex: 0,
               }}
             />
-            {/* Phone mockup — in front, cropped from full perspective render (4000×3000)
-                Figma: container 219×575px, image w=409.84% h=116.91% left=-157.99% top=-8.73% */}
+            {/* Phone mockup */}
             <div
               className="itau-phone-wrap"
               style={{
@@ -346,29 +344,43 @@ export default function ItauCasePage() {
                 }}
               />
             </div>
-          </div>
+          </motion.div>
 
           {/* Right: text content */}
-          <div className="itau-text-col flex-1 min-w-0 lg:pl-12 flex flex-col gap-4" style={{ maxWidth: 688 }}>
+          <motion.div
+            className="itau-text-col flex-1 min-w-0 lg:pl-12 flex flex-col"
+            style={{ maxWidth: 688 }}
+            variants={stagger(0.1)}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.15 }}
+          >
 
-            <p className="itau-label" style={{ fontFamily: "'Agrandir'", fontWeight: 800, fontSize: 20, color: BRAND }}>
-              Escalabilidade e Consistência
-            </p>
+            {/* Label + heading group */}
+            <motion.div className="flex flex-col gap-4" variants={fadeUp}>
+              <p className="itau-label" style={{ fontFamily: "'Agrandir'", fontWeight: 800, fontSize: 20, color: BRAND }}>
+                Escalabilidade e Consistência
+              </p>
+              <h2 className="itau-heading" style={{ fontFamily: "'Agrandir'", fontWeight: 300, fontSize: "clamp(28px,2.6vw,40px)", color: "#242a2f", lineHeight: "1.25", letterSpacing: "0.2px" }}>
+                Simplificando sistemas de design para eficiência
+              </h2>
+            </motion.div>
 
-            <h2 className="itau-heading" style={{ fontFamily: "'Agrandir'", fontWeight: 300, fontSize: "clamp(28px,2.6vw,40px)", color: "#242a2f", lineHeight: "1.25", letterSpacing: "0.2px" }}>
-              Simplificando sistemas de design para eficiência
-            </h2>
-
-            <p className="itau-body" style={{ fontFamily: "'Agrandir Narrow'", fontSize: "clamp(17px,1.4vw,21px)", color: "#616569", lineHeight: "33px" }}>
+            <motion.p
+              className="itau-body mt-[26px]"
+              style={{ fontFamily: "'Agrandir Narrow'", fontSize: "clamp(17px,1.4vw,21px)", color: "#616569", lineHeight: "33px" }}
+              variants={fadeUpSlow}
+            >
               Atuando na criação do{" "}
               <strong style={{ fontFamily: "'Agrandir'", fontWeight: 700, color: "#242a2f" }}>iDS, design system do Itaú</strong>
               {", "}otimizei bibliotecas no Figma, contribuindo para a padronização de processos que promovem consistência, escalabilidade e maior eficiência nas entregas de design e desenvolvimento.
-            </p>
+            </motion.p>
 
             {/* Green metric box */}
-            <div
-              className="itau-metric flex items-center gap-4 rounded-[16px]"
+            <motion.div
+              className="itau-metric flex items-center gap-4 rounded-[16px] mt-8"
               style={{ background: "rgba(0,128,0,0.04)", padding: "8px 24px" }}
+              variants={fadeUp}
             >
               <svg width="32" height="32" viewBox="0 0 32 32" fill="none" style={{ flexShrink: 0 }}>
                 <path d="M4 22L10 16L14 19L20 12L24 15" stroke="#2e7d32" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" opacity="0.75" />
@@ -384,20 +396,20 @@ export default function ItauCasePage() {
                 </strong>{" "}
                 de componentes.
               </p>
-            </div>
+            </motion.div>
 
             {/* Entregáveis + Time */}
-            <div className="itau-meta flex flex-wrap gap-8 mt-2">
-              <div className="itau-deliverables" style={{ minWidth: 220 }}>
+            <motion.div className="itau-meta flex flex-wrap gap-12 mt-10" variants={stagger(0.14)}>
+              <motion.div className="itau-deliverables" style={{ minWidth: 220 }} variants={fadeUp}>
                 <p style={{ fontFamily: "'Agrandir'", fontWeight: 800, fontSize: 24, color: "#242a2f", marginBottom: 8 }}>
                   Entregáveis
                 </p>
                 <p style={{ fontFamily: "'Agrandir'", fontSize: 18, color: "#616569", lineHeight: "32px" }}>
                   Design System • Design Ops •{" "}Service Design • Documentação
                 </p>
-              </div>
+              </motion.div>
 
-              <div className="itau-team" style={{ minWidth: 200 }}>
+              <motion.div className="itau-team" style={{ minWidth: 200 }} variants={fadeUp}>
                 <p style={{ fontFamily: "'Agrandir'", fontWeight: 800, fontSize: 24, color: "#242a2f", marginBottom: 8 }}>
                   Time
                 </p>
@@ -417,9 +429,9 @@ export default function ItauCasePage() {
                     Liderando o produto em parceria com 2 designers
                   </p>
                 </div>
-              </div>
-            </div>
-          </div>
+              </motion.div>
+            </motion.div>
+          </motion.div>
 
           {/* Right chevron — desktop only */}
           <div className="itau-chevron hidden lg:flex items-center absolute" style={{ right: 0, top: "50%", transform: "translateY(-50%)" }}>
@@ -430,28 +442,43 @@ export default function ItauCasePage() {
         </div>
 
         {/* ── Protected section ────────────────────────────────────── */}
-        <div className="itau-protected-wrap px-6 sm:px-12 lg:px-[200px] mb-16">
+        <motion.div
+          className="itau-protected-wrap px-6 sm:px-12 lg:px-[200px] mb-16"
+          variants={stagger(0.14)}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.15 }}
+        >
           <div
             className="itau-protected w-full flex flex-col items-center justify-center text-center rounded-[16px] gap-16"
             style={{ background: "#242a2f", padding: "clamp(60px,8vw,120px) clamp(24px,6vw,120px)", minHeight: 600 }}
           >
-            <div className="itau-protected-inner flex flex-col items-center gap-6" style={{ maxWidth: 520 }}>
-              <img src="/figma-assets/itau-lock-icon.png" alt="" style={{ width: 48, height: 48 }} />
+            <motion.div className="itau-protected-inner flex flex-col items-center gap-6" style={{ maxWidth: 520 }} variants={stagger(0.12)}>
+              <motion.svg variants={fadeUp} width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="white" strokeWidth="1.4" strokeLinecap="round"/>
+                <rect x="4.5" y="10" width="13" height="10" rx="2" fill="white" fillOpacity="0.9"/>
+                <circle cx="11" cy="15.5" r="1.5" fill="rgba(36,42,47,0.45)"/>
+                <circle cx="18.5" cy="18.5" r="5.5" fill="#242a2f"/>
+                <circle cx="18.5" cy="17" r="1.6" fill="white"/>
+                <path d="M15.2 22.5a3.3 3.3 0 0 1 6.6 0" fill="white"/>
+              </motion.svg>
 
-              <div className="itau-protected-text flex flex-col gap-4">
-                <h2 style={{ fontFamily: "'Agrandir'", fontWeight: 800, fontSize: "clamp(32px,3.2vw,48px)", color: "white", lineHeight: 1.05, letterSpacing: "0.24px" }}>
+              <motion.div className="itau-protected-text flex flex-col gap-4" variants={stagger(0.1)}>
+                <motion.h2 variants={fadeUp} style={{ fontFamily: "'Agrandir'", fontWeight: 800, fontSize: "clamp(32px,3.2vw,48px)", color: "white", lineHeight: 1.05, letterSpacing: "0.24px" }}>
                   Este conteúdo é protegido
-                </h2>
-                <p style={{ fontFamily: "'Agrandir'", fontWeight: 300, fontSize: 20, color: "rgba(255,255,255,0.72)" }}>
+                </motion.h2>
+                <motion.p variants={fadeUpSlow} style={{ fontFamily: "'Agrandir'", fontWeight: 300, fontSize: 20, color: "rgba(255,255,255,0.72)" }}>
                   Clique abaixo para visualizar o case completo
-                </p>
-              </div>
-            </div>
+                </motion.p>
+              </motion.div>
+            </motion.div>
 
             {/* CTA button */}
-            <CaseButton />
+            <motion.div variants={fadeUp}>
+              <CaseButton />
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
 
       </div>
     </>

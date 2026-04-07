@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useState, useMemo, useRef, useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { LayoutGroup, motion, AnimatePresence } from "framer-motion";
-import { MemojiContext } from "./MemojiContext";
+import { MemojiContext, CaseExpandParams } from "./MemojiContext";
 
 /* ── Loader constants ───────────────────────────────────────────── */
 const PILL_W  = 240;
@@ -25,19 +25,19 @@ const CASES_HERO = [
 
 /* ── Brand shape per case (CSS, no PNG) ─────────────────────────── */
 // leftFromCenter: offset from winW/2 (design canvas 1600px → center 800px)
-//   Itaú:        left=823  → 823-800 = +23
-//   Descomplica: left=630  → 630-800 = -170
-//   Warren:      left=823  → 823-800 = +23
-// actual left in brandAnimate = winW/2 + leftFromCenter
+// topOffset: vertical offset from the hero text center (winH/2+22)
+//   Itaú/Warren: shape center = winH/2+22 → topOffset = 0
+//   Descomplica: shape center = winH/2+22-14 → topOffset = -14
+// actual top in brandAnimate = winH/2 + 22 + topOffset - height/2
 const CASE_POSITIONS = [
   // 0 — Itaú: orange-red rounded square
-  { leftFromCenter: 23, top: 307, width: 320, height: 320,
+  { leftFromCenter: 23, topOffset: 0, width: 320, height: 320,
     color: "#F06000", borderRadius: 80, extraRotation: 0 },
   // 1 — Descomplica: green rotated rounded square
-  { leftFromCenter: -170, top: 283, width: 340, height: 340,
+  { leftFromCenter: -170, topOffset: -14, width: 340, height: 340,
     color: "#00E887", borderRadius: 90, extraRotation: 15 },
   // 2 — Warren: crimson D-shape
-  { leftFromCenter: 23, top: 307, width: 320, height: 320,
+  { leftFromCenter: 23, topOffset: 0, width: 320, height: 320,
     color: "#E02B57", borderRadius: "90px 90px 90px 0", extraRotation: 0 },
 ];
 
@@ -56,6 +56,15 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
   const [heroAnimating,    setHeroAnimating]     = useState(false);
   const [winH,             setWinH]              = useState(890);
   const [winW,             setWinW]              = useState(1600);
+
+  /* ── Case expand overlay (persists across navigation) ────────────── */
+  const [expandOverlay, setExpandOverlay] = useState<{
+    caseId: string;
+    from: { left: number; top: number; w: number; h: number };
+    brandColor: string;
+    overlayRadius: number;
+    phase: "expanding" | "fading";
+  } | null>(null);
 
   /* ── Loader state ────────────────────────────────────────────── */
   const [isLoading,        setIsLoading]         = useState(true);
@@ -116,7 +125,7 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isCasesCarousel && isDesktop !== false && !rotationFiredRef.current) {
       rotationFiredRef.current = true;
-      setBrandRotation(r => r + 360);
+      setTimeout(() => setBrandRotation(r => r + 360), 0);
     }
   }, [isCasesCarousel, isDesktop]);
 
@@ -190,7 +199,8 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
   if ((isCasesCarousel || heroAnimating) && isDesktop !== false) {
     const pos = CASE_POSITIONS[activeCaseIndex] ?? CASE_POSITIONS[0];
     brandAnimate = {
-      left: winW / 2 + pos.leftFromCenter, top: pos.top,
+      left: winW / 2 + pos.leftFromCenter,
+      top: winH / 2 + 22 + pos.topOffset - pos.height / 2,
       width: pos.width, height: pos.height,
       borderRadius: pos.borderRadius,
       backgroundColor: pos.color,
@@ -268,6 +278,22 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  /* ── Case expand — persistent overlay + navigation ───────────── */
+  const triggerCaseExpand = useCallback(({ caseId, link, from, brandColor, overlayRadius }: CaseExpandParams) => {
+    setExpandOverlay({ caseId, from, brandColor, overlayRadius, phase: "expanding" });
+    // Navigate when expansion animation ends (0.38s)
+    const t1 = setTimeout(() => router.push(link), 380);
+    // Start cross-fade with new page template animation (420ms)
+    const t2 = setTimeout(() => {
+      setExpandOverlay(s => s ? { ...s, phase: "fading" } : null);
+    }, 380);
+    // Remove overlay after fade completes
+    const t3 = setTimeout(() => setExpandOverlay(null), 900);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, [router]);
+
+  const caseExpanding = expandOverlay !== null;
+
   /* ── Hero text click → case page ─────────────────────────────── */
   const handleHeroTextClick = useCallback(() => {
     if (!heroLive) return;
@@ -281,8 +307,8 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
   }, [heroLive, heroCase, router]);
 
   const ctx = useMemo(
-    () => ({ setHovered, setTargetRect, setPhotoVisible, casesHovered, setCasesHovered, activeCaseIndex, setActiveCaseIndex, heroLanded, heroAnimating, startHeroAnimation }),
-    [casesHovered, activeCaseIndex, heroLanded, heroAnimating, startHeroAnimation]
+    () => ({ setHovered, setTargetRect, setPhotoVisible, casesHovered, setCasesHovered, activeCaseIndex, setActiveCaseIndex, heroLanded, heroAnimating, startHeroAnimation, triggerCaseExpand, caseExpanding }),
+    [casesHovered, activeCaseIndex, heroLanded, heroAnimating, startHeroAnimation, triggerCaseExpand, caseExpanding]
   );
 
   return (
@@ -450,6 +476,53 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
             </motion.p>
           </div>
         )}
+
+        {/* ── Case expand overlay (persists through navigation) ────── */}
+        <AnimatePresence>
+          {expandOverlay && (
+            <motion.div
+              key="case-expand-overlay"
+              style={{ position: "fixed", overflow: "hidden", zIndex: 9995, pointerEvents: "none" }}
+              initial={{
+                left: expandOverlay.from.left,
+                top: expandOverlay.from.top,
+                width: expandOverlay.from.w,
+                height: expandOverlay.from.h,
+                borderRadius: expandOverlay.overlayRadius,
+                opacity: 0.4,
+              }}
+              animate={expandOverlay.phase === "expanding" ? {
+                left:   winW * 0.0375,
+                top:    winH * 0.1506,
+                width:  winW * 0.925,
+                height: winH * 0.7011,
+                borderRadius: 0,
+                opacity: 1,
+              } : {
+                left:   winW * 0.0375,
+                top:    winH * 0.1506,
+                width:  winW * 0.925,
+                height: winH * 0.7011,
+                borderRadius: 0,
+                opacity: 0,
+              }}
+              transition={expandOverlay.phase === "expanding"
+                ? { duration: 0.38, ease: [0.4, 0, 0.2, 1] as [number,number,number,number] }
+                : { duration: 0.5, ease: "easeInOut" }
+              }
+            >
+              {expandOverlay.caseId === "itau" ? (
+                <video
+                  src="/bg-cases.mp4"
+                  autoPlay muted loop playsInline
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              ) : (
+                <div style={{ width: "100%", height: "100%", background: expandOverlay.brandColor }} />
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {children}
       </LayoutGroup>

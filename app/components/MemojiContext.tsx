@@ -2,6 +2,14 @@
 
 import { createContext, useContext } from "react";
 
+export interface CaseExpandParams {
+  caseId: string;
+  link: string;
+  from: { left: number; top: number; w: number; h: number };
+  brandColor: string;
+  overlayRadius: number;
+}
+
 interface MemojiCtx {
   setHovered: (v: boolean) => void;
   setTargetRect: (rect: { x: number; y: number; width: number; height: number } | null) => void;
@@ -15,6 +23,9 @@ interface MemojiCtx {
   heroLanded: boolean;
   heroAnimating: boolean;
   startHeroAnimation: () => void;
+  // Case expand transition (persistent overlay in LayoutProvider)
+  triggerCaseExpand: (params: CaseExpandParams) => void;
+  caseExpanding: boolean;
 }
 
 export const MemojiContext = createContext<MemojiCtx>({
@@ -28,6 +39,8 @@ export const MemojiContext = createContext<MemojiCtx>({
   heroLanded: false,
   heroAnimating: false,
   startHeroAnimation: () => {},
+  triggerCaseExpand: () => {},
+  caseExpanding: false,
 });
 
 export const useMemojiContext = () => useContext(MemojiContext);

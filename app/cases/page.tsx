@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { TransitionLink } from "../components/TransitionLink";
 import MenuOverlay from "../components/MenuOverlay";
@@ -38,7 +37,7 @@ const CASES: Case[] = [
     nextCase: "Descomplica",
     nameFontSize: 160,
     descLeftOffset: 210,
-    descTopOffset: 13,
+    descTopOffset: -11,
     descWidth: "292px",
     link: "/cases/itau",
     brandColor: "#F06000",
@@ -135,13 +134,10 @@ export default function CasesPage() {
   const [direction, setDirection]     = useState<1 | -1>(1);
   const [menuOpen, setMenuOpen]       = useState(false);
   const [slideHovered, setSlideHovered] = useState(false);
-  const [isExpanding, setIsExpanding] = useState(false);
-  const [expandFrom, setExpandFrom]   = useState({ left: 0, top: 0, w: 0, h: 0 });
   const [winW, setWinW]               = useState(1600);
   const [winH, setWinH]               = useState(890);
   const scrollLockRef                 = useRef(false);
-  const router                        = useRouter();
-  const { setActiveCaseIndex, heroLanded } = useMemojiContext();
+  const { setActiveCaseIndex, heroLanded, triggerCaseExpand } = useMemojiContext();
 
   // Track viewport size
   useEffect(() => {
@@ -208,14 +204,22 @@ export default function CasesPage() {
   const descLeft = heroCasesLeft + current.descLeftOffset;
   const descTop  = heroCasesTop + current.nameFontSize + current.descTopOffset;
 
-  // Navigate with expand animation from overlay position
+  // Hover zone: matches Figma click-case-1 (996×320, centered at hero text)
+  const hoverZoneLeft = heroCasesLeft;
+  const hoverZoneTop  = winH / 2 - 138; // winH/2 + 22 - 160 (click-case-1 top)
+
+  // Navigate via persistent overlay in LayoutProvider (no flash on navigation)
   const handleCaseClick = useCallback(() => {
-    if (!heroLanded || isExpanding) return;
-    setExpandFrom({ left: overlayLeft, top: overlayTop, w: overlayW, h: overlayH });
-    setIsExpanding(true);
-    sessionStorage.setItem("caseVideoTransition", "1");
-    setTimeout(() => router.push(current.link), 580);
-  }, [heroLanded, isExpanding, overlayLeft, overlayTop, overlayW, overlayH, current.link, router]);
+    if (!heroLanded) return;
+    setSlideHovered(false);
+    triggerCaseExpand({
+      caseId: current.id,
+      link: current.link,
+      from: { left: overlayLeft, top: overlayTop, w: overlayW, h: overlayH },
+      brandColor: current.brandColor,
+      overlayRadius: current.overlayBorderRadius,
+    });
+  }, [heroLanded, triggerCaseExpand, current, overlayLeft, overlayTop, overlayW, overlayH]);
 
   /* Slide transition variants */
   const slideVariants = {
@@ -227,37 +231,6 @@ export default function CasesPage() {
   return (
     <>
       <MenuOverlay open={menuOpen} onClose={() => setMenuOpen(false)} />
-
-      {/* ── Full-screen expand overlay ───────────────────────────── */}
-      <AnimatePresence>
-        {isExpanding && (
-          <motion.div
-            key="expand-overlay"
-            style={{ position: "fixed", zIndex: 9999, overflow: "hidden" }}
-            initial={{
-              left: expandFrom.left,
-              top: expandFrom.top,
-              width: expandFrom.w,
-              height: expandFrom.h,
-              borderRadius: current.overlayBorderRadius,
-            }}
-            animate={{
-              left: 0,
-              top: 0,
-              width: winW,
-              height: winH,
-              borderRadius: 0,
-            }}
-            transition={{ duration: 0.55, ease: [0.4, 0, 0.2, 1] }}
-          >
-            <video
-              src="/bg-cases.mp4"
-              autoPlay muted loop playsInline
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* ══════════════════════════════════════ DESKTOP ══ */}
       <div
@@ -295,10 +268,24 @@ export default function CasesPage() {
             exit="exit"
             transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
             className="absolute inset-0"
-            onMouseEnter={() => heroLanded && setSlideHovered(true)}
-            onClick={handleCaseClick}
-            style={{ cursor: slideHovered && heroLanded ? "pointer" : "default" }}
           >
+            {/* ── Hover zone: matches Figma click-case-1 (996×320) ── */}
+            {/* Only this area triggers the video overlay and click    */}
+            <div
+              className="absolute"
+              style={{
+                left: hoverZoneLeft,
+                top: hoverZoneTop,
+                width: 996,
+                height: 320,
+                zIndex: 10,
+                cursor: heroLanded ? "pointer" : "default",
+              }}
+              onMouseEnter={() => heroLanded && setSlideHovered(true)}
+              onMouseLeave={() => setSlideHovered(false)}
+              onClick={handleCaseClick}
+            />
+
             {/* ── Video background overlay (Figma hover state) ──── */}
             <motion.div
               className="absolute overflow-hidden pointer-events-none"
@@ -313,11 +300,23 @@ export default function CasesPage() {
               animate={{ opacity: slideHovered && heroLanded ? 0.4 : 0 }}
               transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
             >
-              <video
-                src="/bg-cases.mp4"
-                autoPlay muted loop playsInline
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
+              {current.id === "descomplica" ? (
+                <img
+                  src="/figma-assets/descomplica-app-screenshot.png"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              ) : current.id === "warren" ? (
+                <img
+                  src="/figma-assets/warren-hero-screens.png"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              ) : (
+                <video
+                  src="/bg-cases.mp4"
+                  autoPlay muted loop playsInline
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              )}
             </motion.div>
 
             {/* Description — follows hero brand name */}
