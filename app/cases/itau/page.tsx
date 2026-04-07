@@ -252,7 +252,7 @@ export default function ItauCasePage() {
         </nav>
 
         {/* ── Hero cover ───────────────────────────────────────────── */}
-        <div className="itau-hero-wrap mt-8 px-6 sm:px-12 lg:px-[200px]">
+        <div className="itau-hero-wrap mt-8 px-[3.75vw]">
           <HeroCover />
         </div>
 

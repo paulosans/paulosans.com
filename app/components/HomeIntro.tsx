@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { TransitionLink } from "./TransitionLink";
 import MenuOverlay from "./MenuOverlay";
 import { useMemojiContext } from "./MemojiContext";
@@ -108,7 +109,7 @@ function MenuButton({ onClick }: { onClick: () => void }) {
 export default function HomeIntro() {
   const [aboutHovered, setAboutHovered] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const { setHovered, casesHovered, setCasesHovered, startHeroAnimation } = useMemojiContext();
+  const { setHovered, casesHovered, setCasesHovered, startHeroAnimation, heroAnimating } = useMemojiContext();
 
   const handleAboutEnter = () => { setAboutHovered(true);  setHovered(true);  };
   const handleAboutLeave = () => { setAboutHovered(false); setHovered(false); };
@@ -136,9 +137,11 @@ export default function HomeIntro() {
 
         {/* orange shape is now managed by LayoutProvider via MemojiContext */}
 
-        <div
+        <motion.div
           className="home-hero-text absolute left-[200px]"
           style={{ top: "130px", transform: aboutHovered ? "translateY(15px)" : "translateY(0)", transition: "transform 0.4s ease-in-out" }}
+          animate={{ opacity: heroAnimating ? 0 : 1 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
         >
           <p className="home-hero-paragraph font-['Agrandir_Wide'] font-light text-[#242a2f] dark:text-[#f0ede8] text-4xl tracking-[1px] leading-snug transition-colors duration-300">
             Sou o Paulo Santos,
@@ -149,13 +152,15 @@ export default function HomeIntro() {
               @mercadolivre
             </a>
           </p>
-        </div>
+        </motion.div>
 
-        <div
+        <motion.div
           className="home-sobre-btn-area absolute"
           style={{ left: "188px", top: "322px", width: "318px", height: "91px", display: "flex", alignItems: "center", justifyContent: "flex-start", paddingLeft: "12px", transform: aboutHovered ? "translateY(-9px)" : "translateY(0)", transition: "transform 0.4s ease-in-out" }}
           onMouseEnter={handleAboutEnter}
           onMouseLeave={handleAboutLeave}
+          animate={{ opacity: heroAnimating ? 0 : 1 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
         >
           <TransitionLink
             href="/sobre"
@@ -175,7 +180,7 @@ export default function HomeIntro() {
               </div>
             </div>
           </TransitionLink>
-        </div>
+        </motion.div>
 
         <TransitionLink
           href="/cases"

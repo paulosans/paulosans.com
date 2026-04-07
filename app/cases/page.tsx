@@ -161,7 +161,7 @@ export default function CasesPage() {
   const overlayW = Math.min(winW * 0.917, 1320);
   const overlayH = Math.min(winH * 0.677, 608);
   const overlayLeft = (winW - overlayW) / 2;
-  const overlayTop  = (winH - overlayH) / 2;
+  const overlayTop  = winH / 2 + 22 - overlayH / 2;
 
   const goTo = useCallback(
     (index: number, dir: 1 | -1) => {

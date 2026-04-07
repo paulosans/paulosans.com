@@ -281,14 +281,14 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
   /* ── Case expand — persistent overlay + navigation ───────────── */
   const triggerCaseExpand = useCallback(({ caseId, link, from, brandColor, overlayRadius }: CaseExpandParams) => {
     setExpandOverlay({ caseId, from, brandColor, overlayRadius, phase: "expanding" });
-    // Navigate when expansion animation ends (0.38s)
-    const t1 = setTimeout(() => router.push(link), 380);
-    // Start cross-fade with new page template animation (420ms)
+    // Navigate when expansion animation ends (0.42s)
+    const t1 = setTimeout(() => router.push(link), 420);
+    // Start cross-fade with new page template animation
     const t2 = setTimeout(() => {
       setExpandOverlay(s => s ? { ...s, phase: "fading" } : null);
-    }, 380);
+    }, 420);
     // Remove overlay after fade completes
-    const t3 = setTimeout(() => setExpandOverlay(null), 900);
+    const t3 = setTimeout(() => setExpandOverlay(null), 1000);
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, [router]);
 
@@ -451,6 +451,8 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
                 color: "#242a2f",
                 margin: 0,
                 cursor: heroLive ? "pointer" : "default",
+                width: (isCasesCarousel || heroAnimating) ? 758 : "auto",
+                textAlign: (isCasesCarousel || heroAnimating) ? "center" : "left",
               }}
               animate={heroAnimate}
               transition={{
@@ -480,47 +482,53 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
         {/* ── Case expand overlay (persists through navigation) ────── */}
         <AnimatePresence>
           {expandOverlay && (
-            <motion.div
-              key="case-expand-overlay"
-              style={{ position: "fixed", overflow: "hidden", zIndex: 9995, pointerEvents: "none" }}
-              initial={{
-                left: expandOverlay.from.left,
-                top: expandOverlay.from.top,
-                width: expandOverlay.from.w,
-                height: expandOverlay.from.h,
-                borderRadius: expandOverlay.overlayRadius,
-                opacity: 0.4,
-              }}
-              animate={expandOverlay.phase === "expanding" ? {
-                left:   winW * 0.0375,
-                top:    winH * 0.1506,
-                width:  winW * 0.925,
-                height: winH * 0.7011,
-                borderRadius: 0,
-                opacity: 1,
-              } : {
-                left:   winW * 0.0375,
-                top:    winH * 0.1506,
-                width:  winW * 0.925,
-                height: winH * 0.7011,
-                borderRadius: 0,
-                opacity: 0,
-              }}
-              transition={expandOverlay.phase === "expanding"
-                ? { duration: 0.38, ease: [0.4, 0, 0.2, 1] as [number,number,number,number] }
-                : { duration: 0.5, ease: "easeInOut" }
-              }
-            >
-              {expandOverlay.caseId === "itau" ? (
-                <video
-                  src="/bg-cases.mp4"
-                  autoPlay muted loop playsInline
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-              ) : (
+            <>
+              {/* White bg covers non-video areas during transition */}
+              <motion.div
+                key="case-expand-bg"
+                style={{ position: "fixed", inset: 0, backgroundColor: "#fff", zIndex: 9990, pointerEvents: "none" }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: expandOverlay.phase === "expanding" ? 1 : 0 }}
+                transition={expandOverlay.phase === "expanding"
+                  ? { duration: 0.42, ease: [0.4, 0, 0.2, 1] as [number,number,number,number] }
+                  : { duration: 0.55, ease: "easeInOut" }
+                }
+              />
+              {/* Video/color overlay expands to hero cover dimensions */}
+              <motion.div
+                key="case-expand-overlay"
+                style={{ position: "fixed", overflow: "hidden", zIndex: 9995, pointerEvents: "none" }}
+                initial={{
+                  left: expandOverlay.from.left,
+                  top: expandOverlay.from.top,
+                  width: expandOverlay.from.w,
+                  height: expandOverlay.from.h,
+                  borderRadius: expandOverlay.overlayRadius,
+                  opacity: 0.4,
+                }}
+                animate={expandOverlay.phase === "expanding" ? {
+                  left:   winW * 0.0375,
+                  top:    winH * 0.1506,
+                  width:  winW * 0.925,
+                  height: winH * 0.7011,
+                  borderRadius: Math.max(32, Math.min(winW * 0.053, 80)),
+                  opacity: 1,
+                } : {
+                  left:   winW * 0.0375,
+                  top:    winH * 0.1506,
+                  width:  winW * 0.925,
+                  height: winH * 0.7011,
+                  borderRadius: Math.max(32, Math.min(winW * 0.053, 80)),
+                  opacity: 0,
+                }}
+                transition={expandOverlay.phase === "expanding"
+                  ? { duration: 0.42, ease: [0.4, 0, 0.2, 1] as [number,number,number,number] }
+                  : { duration: 0.55, ease: "easeInOut" }
+                }
+              >
                 <div style={{ width: "100%", height: "100%", background: expandOverlay.brandColor }} />
-              )}
-            </motion.div>
+              </motion.div>
+            </>
           )}
         </AnimatePresence>
 
