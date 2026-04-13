@@ -44,6 +44,7 @@ const CASE_POSITIONS = [
 export function LayoutProvider({ children }: { children: React.ReactNode }) {
   const pathname  = usePathname();
   const router    = useRouter();
+  const prevPathnameRef = useRef(pathname);
 
   const [hovered,          setHovered]          = useState(false);
   const [targetRect,       setTargetRect]        = useState<{ x: number; y: number; width: number; height: number } | null>(null);
@@ -105,6 +106,9 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
   const hasMemojiPlaceholder = ["/sobre", "/curriculo"].includes(pathname);
 
   useIsomorphicLayoutEffect(() => {
+    const prevPathname = prevPathnameRef.current;
+    prevPathnameRef.current = pathname;
+
     if (!isSobre) setPhotoVisible(false);
     if (!hasMemojiPlaceholder) setTargetRect(null);
     // Reset case index when leaving cases
@@ -113,6 +117,15 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
     if (!isCases) setHeroLanded(false);
     // Reset hero animating flag once navigation is complete
     setHeroAnimating(false);
+
+    // Returning from a case page to the carousel: skip the 400ms fly-in delay
+    const prevWasCasePage = prevPathname !== pathname
+      && prevPathname.startsWith("/cases/")
+      && prevPathname !== "/cases/"
+      && prevPathname !== "/cases";
+    if (isCasesCarousel && prevWasCasePage && isDesktop !== false) {
+      setHeroLanded(true);
+    }
   }, [pathname]);
 
   // Reset rotation flag when leaving cases
@@ -140,11 +153,13 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
   }, [isDesktop]);
 
   // Mark hero text as landed slightly before spring settles (~400ms)
+  // Skip if already landed (e.g. returning from a case page)
   useEffect(() => {
-    if (isCasesCarousel && isDesktop !== false) {
+    if (isCasesCarousel && isDesktop !== false && !heroLanded) {
       const t = setTimeout(() => setHeroLanded(true), 400);
       return () => clearTimeout(t);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCasesCarousel, isDesktop]);
 
   /* ── Memoji animate target ─────────────────────────────────────── */
@@ -280,6 +295,8 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
 
   /* ── Case expand — persistent overlay + navigation ───────────── */
   const triggerCaseExpand = useCallback(({ caseId, link, from, brandColor, overlayRadius }: CaseExpandParams) => {
+    // Save current index so /cases/ can restore it when user clicks "Voltar"
+    sessionStorage.setItem("casesReturnIndex", String(activeCaseIndex));
     setExpandOverlay({ caseId, from, brandColor, overlayRadius, phase: "expanding" });
     // Navigate when expansion animation ends (0.42s)
     const t1 = setTimeout(() => router.push(link), 420);
@@ -290,7 +307,7 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
     // Remove overlay after fade completes
     const t3 = setTimeout(() => setExpandOverlay(null), 1000);
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
-  }, [router]);
+  }, [router, activeCaseIndex]);
 
   const caseExpanding = expandOverlay !== null;
 
@@ -372,6 +389,15 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
 
             </motion.div>
           </div>
+        )}
+
+        {/* ── Preload transition videos ─────────────────────────────── */}
+        {isCasesCarousel && (
+          <video
+            src="/figma-assets/descomplica-animation.mp4"
+            muted playsInline preload="auto"
+            style={{ position: "fixed", width: 1, height: 1, opacity: 0, pointerEvents: "none", zIndex: -1 }}
+          />
         )}
 
         {/* ── White overlay — covers page during loading ────────────── */}
@@ -526,7 +552,15 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
                   : { duration: 0.55, ease: "easeInOut" }
                 }
               >
-                <div style={{ width: "100%", height: "100%", background: expandOverlay.brandColor }} />
+                {expandOverlay.caseId === "descomplica" ? (
+                  <video
+                    src="/figma-assets/descomplica-animation.mp4"
+                    autoPlay muted loop playsInline
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                ) : (
+                  <div style={{ width: "100%", height: "100%", background: expandOverlay.brandColor }} />
+                )}
               </motion.div>
             </>
           )}

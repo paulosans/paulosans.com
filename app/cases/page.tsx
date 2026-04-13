@@ -47,7 +47,7 @@ const CASES: Case[] = [
   {
     id: "descomplica",
     name: "Descomplica",
-    description: "Colaboração no aprendizado\ne carreira",
+    description: "Colaboração no\naprendizado e carreira",
     nextCase: "Warren",
     nameFontSize: 108,
     descLeftOffset: 11,
@@ -130,13 +130,23 @@ function ChevronDown({ faded }: { faded: boolean }) {
 
 /* ── Page ───────────────────────────────────────────────────────── */
 export default function CasesPage() {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(() => {
+    if (typeof window === "undefined") return 0;
+    const saved = sessionStorage.getItem("casesReturnIndex");
+    if (saved !== null) {
+      sessionStorage.removeItem("casesReturnIndex");
+      const idx = parseInt(saved, 10);
+      if (idx >= 0 && idx < CASES.length) return idx;
+    }
+    return 0;
+  });
   const [direction, setDirection]     = useState<1 | -1>(1);
   const [menuOpen, setMenuOpen]       = useState(false);
   const [slideHovered, setSlideHovered] = useState(false);
   const [winW, setWinW]               = useState(1600);
   const [winH, setWinH]               = useState(890);
   const scrollLockRef                 = useRef(false);
+  const descomplicaVideoRef           = useRef<HTMLVideoElement>(null);
   const { setActiveCaseIndex, heroLanded, triggerCaseExpand } = useMemojiContext();
 
   // Track viewport size
@@ -156,6 +166,11 @@ export default function CasesPage() {
   useEffect(() => {
     setSlideHovered(false);
   }, [activeIndex]);
+
+  // Force video to play regardless of opacity
+  useEffect(() => {
+    descomplicaVideoRef.current?.play().catch(() => {});
+  }, []);
 
   // Overlay dimensions — mirrors Figma: 1320×608 centered, ~92% width
   const overlayW = Math.min(winW * 0.917, 1320);
@@ -301,21 +316,66 @@ export default function CasesPage() {
               transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
             >
               {current.id === "descomplica" ? (
-                <img
-                  src="/figma-assets/descomplica-app-screenshot.png"
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
+                <>
+                  <video
+                    ref={descomplicaVideoRef}
+                    src="/figma-assets/descomplica-animation.mp4"
+                    autoPlay muted loop playsInline
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      maskImage: "url('/figma-assets/descomplica-animation-bg.svg')",
+                      maskSize: "100% 100%",
+                      maskRepeat: "no-repeat",
+                    }}
+                  />
+                  <img
+                    src="/figma-assets/descomplica-overlay.svg"
+                    alt=""
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      width: "100%",
+                      height: "100%",
+                    }}
+                  />
+                </>
               ) : current.id === "warren" ? (
-                <img
-                  src="/figma-assets/warren-hero-screens.png"
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                <video
+                  src="/figma-assets/warren-animation.mp4"
+                  autoPlay muted loop playsInline
+                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
                 />
               ) : (
-                <video
-                  src="/bg-cases.mp4"
-                  autoPlay muted loop playsInline
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
+                <>
+                  <video
+                    src="/bg-cases.mp4"
+                    autoPlay muted loop playsInline
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      maskImage: "url('/figma-assets/itau-hero-mask.svg')",
+                      maskSize: "100% 100%",
+                      maskRepeat: "no-repeat",
+                    }}
+                  />
+                  <img
+                    src="/figma-assets/itau-overlay.svg"
+                    alt=""
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      width: "100%",
+                      height: "100%",
+                    }}
+                  />
+                </>
               )}
             </motion.div>
 
@@ -417,7 +477,13 @@ export default function CasesPage() {
               exit="exit"
               transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
               className="absolute inset-0 flex flex-col justify-center px-8 pb-16"
-              onClick={handleCaseClick}
+              onClick={() => triggerCaseExpand({
+                caseId: current.id,
+                link: current.link,
+                from: { left: overlayLeft, top: overlayTop, w: overlayW, h: overlayH },
+                brandColor: current.brandColor,
+                overlayRadius: current.overlayBorderRadius,
+              })}
             >
               {/* Logo */}
               <div className="flex justify-center mb-6">

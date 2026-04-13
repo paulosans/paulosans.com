@@ -80,7 +80,7 @@ function HeroCover() {
     <div
       className="itau-hero-cover w-full overflow-hidden"
       style={{
-        height: "clamp(220px, 41.2vw, 624px)",
+        height: "60vh",
         borderRadius: "clamp(32px,5.3vw,80px)",
       }}
     >
@@ -252,7 +252,7 @@ export default function ItauCasePage() {
         </nav>
 
         {/* ── Hero cover ───────────────────────────────────────────── */}
-        <div className="itau-hero-wrap mt-8 px-[3.75vw]">
+        <div className="itau-hero-wrap mt-8 px-[4vw]">
           <HeroCover />
         </div>
 
