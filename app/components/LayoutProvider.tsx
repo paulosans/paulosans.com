@@ -341,7 +341,7 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
               width: 0, height: 0,
               overflow: "visible",
               pointerEvents: "none",
-              zIndex: brandNormalZ ? 1 : 9999,
+              zIndex: brandNormalZ ? 9 : 9999,
               display: (isSobre || isCasePage) ? "none" : undefined,
             }}
           >
