@@ -530,7 +530,7 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
                   width: expandOverlay.from.w,
                   height: expandOverlay.from.h,
                   borderRadius: expandOverlay.overlayRadius,
-                  opacity: 0.4,
+                  opacity: 0.6,
                 }}
                 animate={expandOverlay.phase === "expanding" ? {
                   left:   winW * 0.0375,
